@@ -446,8 +446,9 @@ class Api:
         if not from_fetcher:
             b64images = list(
                 map(encode_pil_to_base64, processed.images)) if send_images else []
+            return models.TextToImageResponse(images=b64images, parameters=vars(txt2imgreq), info=processed.js())
 
-        return models.TextToImageResponse(images=b64images, parameters=vars(txt2imgreq), info=processed.js())
+        return b64images
 
     def img2imgapi(self, img2imgreq: models.StableDiffusionImg2ImgProcessingAPI):
         init_images = img2imgreq.init_images
