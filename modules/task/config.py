@@ -6,7 +6,7 @@ TRAIN_TMP_OUT_ROOT = "/tmp/output"
 SD_MODEL_PATH = "/data/shared/models/Lora/zytrain/"
 
 
-ZY_BACK_URL = "http://127.0.0.1:8000/"
+ZY_BACK_URL = "https://api-zy.greatleapai.com/"
 
 FETCH_TASK_HEADER = {
     "--ImFromYanCheng---": "x13413413jljkljalf13343jlkajdfkla",
