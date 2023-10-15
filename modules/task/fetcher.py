@@ -32,8 +32,12 @@ def fetch_and_dispatch(api):
         task_id = task.get("task_id")
         params = task["real_param"]
         task_type = task["task_type"]
+        try:
+            handle_task(api, client, task_id, task_type, params)
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
 
-        handle_task(api, client, task_id, task_type, params)
         logger.info(f"handler_task:{task_id}")
 
 
