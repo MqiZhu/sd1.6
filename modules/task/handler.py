@@ -70,7 +70,7 @@ def do_img2img(api, client: DrawClient, task_id, params: dict):
 
     client.update_status(task_id,  status, {
         "images": image_info,
-        "draw_type": "txt2img",
+        "draw_type": "img2img",
         "gen_meta": gen
     })
 
@@ -99,7 +99,7 @@ def do_single(api, client: DrawClient, task_id, params: dict):
 
     client.update_status(task_id,  status, {
         "images": image_info,
-        "draw_type": "txt2img",
+        "draw_type": "single",
         "gen_meta": gen
     })
 
