@@ -25,7 +25,7 @@ def do_txt2img(api, client: DrawClient, task_id, params: dict):
     logger = get_logger()
     req = StableDiffusionTxt2ImgProcessingAPI()
     real_req = req.copy(update=params)
-    images = api.text2imgapi(real_req, from_fetcher=True)
+    images, gen = api.text2imgapi(real_req, from_fetcher=True)
 
     image_info = []
     succ = False
@@ -37,7 +37,9 @@ def do_txt2img(api, client: DrawClient, task_id, params: dict):
         status = DrawTaskStatus.Succ
 
     client.update_status(task_id,  status, {
-        "images": image_info
+        "images": image_info,
+        "draw_type": "txt2img",
+        "gen_meta": gen
     })
 
     logger.info(f"Update status to backend:{image_info}")
