@@ -50,11 +50,11 @@ def do_txt2img(api, client: DrawClient, task_id, params: dict):
 
 def do_img2img(api, client: DrawClient, task_id, params: dict):
     from modules.api.api import Api
-    from modules.api.models import StableDiffusionTxt2ImgProcessingAPI
+    from modules.api.models import StableDiffusionImg2ImgProcessingAPI
 
     A: Api = api
     logger = get_logger()
-    req = StableDiffusionTxt2ImgProcessingAPI()
+    req = StableDiffusionImg2ImgProcessingAPI()
     params.pop("model_id")
     real_req = req.copy(update=params)
     images, gen = api.img2img(real_req)
