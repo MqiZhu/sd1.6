@@ -1,7 +1,7 @@
 # coding:utf-8
 
-from .config import ZY_BACK_URL, TRAINER_NAME
-from .log import get_logger
+from modules.task.config import ZY_BACK_URL, TRAINER_NAME
+from modules.task.log import get_logger
 import enum
 import requests
 
