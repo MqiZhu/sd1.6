@@ -6,6 +6,7 @@ import time
 from modules import timer
 from modules import initialize_util
 from modules import initialize
+from modules.task.fetcher import run
 
 startup_timer = timer.startup_timer
 startup_timer.record("launcher")
@@ -38,6 +39,8 @@ def api_only():
     script_callbacks.app_started_callback(None, app)
 
     print(f"Startup time: {startup_timer.summary()}.")
+
+    t = run(api)
     api.launch(
         server_name="0.0.0.0" if cmd_opts.listen else "127.0.0.1",
         port=cmd_opts.port if cmd_opts.port else 7861,
@@ -67,14 +70,16 @@ def webui():
         if not cmd_opts.no_gradio_queue:
             shared.demo.queue(64)
 
-        gradio_auth_creds = list(initialize_util.get_gradio_auth_creds()) or None
+        gradio_auth_creds = list(
+            initialize_util.get_gradio_auth_creds()) or None
 
         auto_launch_browser = False
         if os.getenv('SD_WEBUI_RESTARTING') != '1':
             if shared.opts.auto_launch_browser == "Remote" or cmd_opts.autolaunch:
                 auto_launch_browser = True
             elif shared.opts.auto_launch_browser == "Local":
-                auto_launch_browser = not any([cmd_opts.listen, cmd_opts.share, cmd_opts.ngrok, cmd_opts.server_name])
+                auto_launch_browser = not any(
+                    [cmd_opts.listen, cmd_opts.share, cmd_opts.ngrok, cmd_opts.server_name])
 
         app, local_url, share_url = shared.demo.launch(
             share=cmd_opts.share,
@@ -101,15 +106,17 @@ def webui():
         # an attacker to trick the user into opening a malicious HTML page, which makes a request to the
         # running web ui and do whatever the attacker wants, including installing an extension and
         # running its code. We disable this here. Suggested by RyotaK.
-        app.user_middleware = [x for x in app.user_middleware if x.cls.__name__ != 'CORSMiddleware']
+        app.user_middleware = [
+            x for x in app.user_middleware if x.cls.__name__ != 'CORSMiddleware']
 
         initialize_util.setup_middleware(app)
 
         progress.setup_progress_api(app)
         ui.setup_ui_api(app)
 
+        api = None
         if launch_api:
-            create_api(app)
+            api = create_api(app)
 
         ui_extra_networks.add_pages_to_demo(app)
 
@@ -120,10 +127,12 @@ def webui():
 
         timer.startup_record = startup_timer.dump()
         print(f"Startup time: {startup_timer.summary()}.")
-
+        if api != None:
+            run(api)
         try:
             while True:
-                server_command = shared.state.wait_for_server_command(timeout=5)
+                server_command = shared.state.wait_for_server_command(
+                    timeout=5)
                 if server_command:
                     if server_command in ("stop", "restart"):
                         break
@@ -155,7 +164,6 @@ def webui():
 
 if __name__ == "__main__":
     from modules.shared_cmd_options import cmd_opts
-
     if cmd_opts.nowebui:
         api_only()
     else:
