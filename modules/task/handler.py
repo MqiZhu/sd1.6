@@ -108,7 +108,7 @@ def do_single(api, client: DrawClient, task_id, params: dict):
     logger.info(f"Update status to backend:{image_info}")
 
 
-def do_single(api, client: DrawClient, task_id, params: dict):
+def do_rmbg(api, client: DrawClient, task_id, params: dict):
     from modules.api.api import Api
     from modules.api.models import ExtrasSingleImageRequest
 
