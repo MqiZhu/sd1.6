@@ -116,7 +116,7 @@ def do_single(api, client: DrawClient, task_id, params: dict):
     logger = get_logger()
     req = ExtrasSingleImageRequest()
     real_req = req.copy(update=params)
-    images, gen = api.r(real_req)
+    images, gen = api.extras_single_image(real_req)
 
     image_info = []
     succ = False
