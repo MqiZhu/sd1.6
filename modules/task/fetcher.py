@@ -33,7 +33,7 @@ def fetch_and_dispatch(api):
         params = task["real_param"]
         task_type = task["task_type"]
 
-        handle_task(api, client, task_type, params)
+        handle_task(api, client, task_id, task_type, params)
         logger.info(f"handler_task:{task_id}")
 
 
