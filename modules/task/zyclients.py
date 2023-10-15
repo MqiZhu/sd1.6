@@ -8,7 +8,7 @@ import requests
 
 class DrawClient(object):
     FecthUrl = f"{ZY_BACK_URL}/drawtask/fetch"
-    UpdateStatusUrl = f"{ZY_BACK_URL}/train/update"
+    UpdateStatusUrl = f"{ZY_BACK_URL}/drawtask/update"
 
     def __init__(self, name=TRAINER_NAME) -> None:
         self.headers = {
