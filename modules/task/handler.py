@@ -47,4 +47,29 @@ def do_txt2img(api, client: DrawClient, task_id, params: dict):
 
 
 def do_img2img(api, client: DrawClient, task_id, params: dict):
-    pass
+    from modules.api.api import Api
+    from modules.api.models import StableDiffusionTxt2ImgProcessingAPI
+
+    A: Api = api
+    logger = get_logger()
+    req = StableDiffusionTxt2ImgProcessingAPI()
+    params.pop("model_id")
+    real_req = req.copy(update=params)
+    images, gen = api.img2img(real_req)
+
+    image_info = []
+    succ = False
+    if len(images) != 0:
+        succ, image_info = upload_to_oss(images)
+
+    status = DrawTaskStatus.Failed
+    if succ:
+        status = DrawTaskStatus.Succ
+
+    client.update_status(task_id,  status, {
+        "images": image_info,
+        "draw_type": "txt2img",
+        "gen_meta": gen
+    })
+
+    logger.info(f"Update status to backend:{image_info}")

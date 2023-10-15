@@ -390,6 +390,66 @@ class Api:
                                     idx] = request.alwayson_scripts[alwayson_script_name]["args"][idx]
         return script_args
 
+    def text2img(self, txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI):
+        script_runner = scripts.scripts_txt2img
+        if not script_runner.scripts:
+            script_runner.initialize_scripts(False)
+            ui.create_ui()
+        if not self.default_script_arg_txt2img:
+            self.default_script_arg_txt2img = self.init_default_script_args(
+                script_runner)
+        selectable_scripts, selectable_script_idx = self.get_selectable_script(
+            txt2imgreq.script_name, script_runner)
+
+        populate = txt2imgreq.copy(update={  # Override __init__ params
+            "sampler_name": validate_sampler_name(txt2imgreq.sampler_name or txt2imgreq.sampler_index),
+            "do_not_save_samples": not txt2imgreq.save_images,
+            "do_not_save_grid": not txt2imgreq.save_images,
+        })
+        if populate.sampler_name:
+            populate.sampler_index = None  # prevent a warning later on
+
+        args = vars(populate)
+        args.pop('script_name', None)
+        # will refeed them to the pipeline directly after initializing them
+        args.pop('script_args', None)
+        args.pop('alwayson_scripts', None)
+
+        script_args = self.init_script_args(
+            txt2imgreq, self.default_script_arg_txt2img, selectable_scripts, selectable_script_idx, script_runner)
+
+        send_images = args.pop('send_images', True)
+        args.pop('save_images', None)
+
+        with self.queue_lock:
+            with closing(StableDiffusionProcessingTxt2Img(sd_model=shared.sd_model, **args)) as p:
+                p.is_api = True
+                p.scripts = script_runner
+                p.outpath_grids = opts.outdir_txt2img_grids
+                p.outpath_samples = opts.outdir_txt2img_samples
+
+                try:
+                    shared.state.begin(job="scripts_txt2img")
+                    if selectable_scripts is not None:
+                        p.script_args = script_args
+                        processed = scripts.scripts_txt2img.run(
+                            p, *p.script_args)  # Need to pass args as list here
+                    else:
+                        # Need to pass args as tuple here
+                        p.script_args = tuple(script_args)
+                        processed = process_images(p)
+                finally:
+                    shared.state.end()
+                    shared.total_tqdm.clear()
+
+        b64images = processed.images
+        if not from_fetcher:
+            b64images = list(
+                map(encode_pil_to_base64, processed.images)) if send_images else []
+            return models.TextToImageResponse(images=b64images, parameters=vars(txt2imgreq), info=processed.js())
+
+        return b64images, processed.js()
+
     def text2imgapi(self, txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI, from_fetcher=False):
         script_runner = scripts.scripts_txt2img
         if not script_runner.scripts:
@@ -523,6 +583,73 @@ class Api:
             img2imgreq.mask = None
 
         return models.ImageToImageResponse(images=b64images, parameters=vars(img2imgreq), info=processed.js())
+
+    def img2img(self, img2imgreq: models.StableDiffusionImg2ImgProcessingAPI):
+        init_images = img2imgreq.init_images
+        if init_images is None:
+            raise HTTPException(status_code=404, detail="Init image not found")
+
+        mask = img2imgreq.mask
+        if mask:
+            mask = decode_base64_to_image(mask)
+
+        script_runner = scripts.scripts_img2img
+        if not script_runner.scripts:
+            script_runner.initialize_scripts(True)
+            ui.create_ui()
+        if not self.default_script_arg_img2img:
+            self.default_script_arg_img2img = self.init_default_script_args(
+                script_runner)
+        selectable_scripts, selectable_script_idx = self.get_selectable_script(
+            img2imgreq.script_name, script_runner)
+
+        populate = img2imgreq.copy(update={  # Override __init__ params
+            "sampler_name": validate_sampler_name(img2imgreq.sampler_name or img2imgreq.sampler_index),
+            "do_not_save_samples": not img2imgreq.save_images,
+            "do_not_save_grid": not img2imgreq.save_images,
+            "mask": mask,
+        })
+        if populate.sampler_name:
+            populate.sampler_index = None  # prevent a warning later on
+
+        args = vars(populate)
+        # this is meant to be done by "exclude": True in model, but it's for a reason that I cannot determine.
+        args.pop('include_init_images', None)
+        args.pop('script_name', None)
+        # will refeed them to the pipeline directly after initializing them
+        args.pop('script_args', None)
+        args.pop('alwayson_scripts', None)
+
+        script_args = self.init_script_args(
+            img2imgreq, self.default_script_arg_img2img, selectable_scripts, selectable_script_idx, script_runner)
+
+        send_images = args.pop('send_images', True)
+        args.pop('save_images', None)
+
+        with self.queue_lock:
+            with closing(StableDiffusionProcessingImg2Img(sd_model=shared.sd_model, **args)) as p:
+                p.init_images = [decode_base64_to_image(
+                    x) for x in init_images]
+                p.is_api = True
+                p.scripts = script_runner
+                p.outpath_grids = opts.outdir_img2img_grids
+                p.outpath_samples = opts.outdir_img2img_samples
+
+                try:
+                    shared.state.begin(job="scripts_img2img")
+                    if selectable_scripts is not None:
+                        p.script_args = script_args
+                        processed = scripts.scripts_img2img.run(
+                            p, *p.script_args)  # Need to pass args as list here
+                    else:
+                        # Need to pass args as tuple here
+                        p.script_args = tuple(script_args)
+                        processed = process_images(p)
+                finally:
+                    shared.state.end()
+                    shared.total_tqdm.clear()
+
+        return processed.images, processed.js()
 
     def extras_single_image_api(self, req: models.ExtrasSingleImageRequest):
         reqDict = setUpscalers(req)
