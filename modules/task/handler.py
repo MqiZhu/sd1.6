@@ -25,7 +25,7 @@ def do_txt2img(api, client: DrawClient, task_id, params: dict):
     logger = get_logger()
     req = StableDiffusionTxt2ImgProcessingAPI()
     real_req = req.copy(update=params)
-    rsp: TextToImageResponse = api.text2imgapi(real_req)
+    rsp: TextToImageResponse = api.text2imgapi(real_req, from_fetcher=True)
     logger.info(rsp)
 
     images = rsp.images
