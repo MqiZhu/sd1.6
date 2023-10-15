@@ -651,6 +651,17 @@ class Api:
 
         return processed.images, processed.js()
 
+    def extras_single_image(self, req: models.ExtrasSingleImageRequest):
+        reqDict = setUpscalers(req)
+
+        reqDict['image'] = decode_base64_to_image(reqDict['image'])
+
+        with self.queue_lock:
+            result = postprocessing.run_extras(
+                extras_mode=0, image_folder="", input_dir="", output_dir="", save_output=False, **reqDict)
+
+        return result[0][0], result[1]
+
     def extras_single_image_api(self, req: models.ExtrasSingleImageRequest):
         reqDict = setUpscalers(req)
 
