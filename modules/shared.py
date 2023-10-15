@@ -9,7 +9,8 @@ from modules import util
 cmd_opts = shared_cmd_options.cmd_opts
 parser = shared_cmd_options.parser
 
-batch_cond_uncond = True  # old field, unused now in favor of shared.opts.batch_cond_uncond
+# old field, unused now in favor of shared.opts.batch_cond_uncond
+batch_cond_uncond = True
 parallel_processing_allowed = True
 styles_filename = cmd_opts.styles_file
 config_filename = cmd_opts.ui_settings_file
@@ -36,7 +37,7 @@ interrogator = None
 face_restorers = []
 
 options_templates = None
-opts = None
+opts = {}
 restricted_opts = None
 
 sd_model: sd_models_types.WebuiSdModel = None
