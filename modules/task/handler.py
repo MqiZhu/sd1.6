@@ -86,7 +86,7 @@ def do_single(api, client: DrawClient, task_id, params: dict):
     A: Api = api
     logger = get_logger()
     req = ExtrasSingleImageRequest()
-
+    params["upscaling_resize"] = params.pop("upscale_by", None)
     real_req = req.copy(update=params)
     images, gen = api.extras_single_image(real_req)
 
