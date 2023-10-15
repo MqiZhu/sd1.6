@@ -2,10 +2,7 @@
 from PIL import Image
 import oss2
 from io import BytesIO
-import fastapi
 from snowflake import SnowflakeGenerator
-from modules.processing import StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, StableDiffusionProcessing
-
 import requests
 import json
 
