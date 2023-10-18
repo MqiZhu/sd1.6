@@ -30,12 +30,12 @@ def do_txt2img(api, client: DrawClient, task_id, params: dict):
     req = StableDiffusionTxt2ImgProcessingAPI()
     params.pop("model_id")
     real_req = req.copy(update=params)
-    images, gen = api.text2img(real_req)
+    images, gen, pic_number = api.text2img(real_req)
 
     image_info = []
     succ = False
     if len(images) != 0:
-        succ, image_info = upload_to_oss(images)
+        succ, image_info = upload_to_oss(images[:pic_number])
 
     status = DrawTaskStatus.Failed
     if succ:
@@ -59,12 +59,12 @@ def do_img2img(api, client: DrawClient, task_id, params: dict):
     req = StableDiffusionImg2ImgProcessingAPI()
     params.pop("model_id")
     real_req = req.copy(update=params)
-    images, gen = api.img2img(real_req)
+    images, gen, pic_number = api.img2img(real_req)
 
     image_info = []
     succ = False
     if len(images) != 0:
-        succ, image_info = upload_to_oss(images)
+        succ, image_info = upload_to_oss(images[:pic_number])
 
     status = DrawTaskStatus.Failed
     if succ:

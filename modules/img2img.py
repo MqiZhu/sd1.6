@@ -20,7 +20,8 @@ def process_batch(p, input_dir, output_dir, inpaint_mask_dir, args, to_scale=Fal
     output_dir = output_dir.strip()
     processing.fix_seed(p)
 
-    images = list(shared.walk_files(input_dir, allowed_extensions=(".png", ".jpg", ".jpeg", ".webp", ".tif", ".tiff")))
+    images = list(shared.walk_files(input_dir, allowed_extensions=(
+        ".png", ".jpg", ".jpeg", ".webp", ".tif", ".tiff")))
 
     is_inpaint_batch = False
     if inpaint_mask_dir:
@@ -28,9 +29,11 @@ def process_batch(p, input_dir, output_dir, inpaint_mask_dir, args, to_scale=Fal
         is_inpaint_batch = bool(inpaint_masks)
 
         if is_inpaint_batch:
-            print(f"\nInpaint batch is enabled. {len(inpaint_masks)} masks found.")
+            print(
+                f"\nInpaint batch is enabled. {len(inpaint_masks)} masks found.")
 
-    print(f"Will process {len(images)} images, creating {p.n_iter * p.batch_size} new images for each.")
+    print(
+        f"Will process {len(images)} images, creating {p.n_iter * p.batch_size} new images for each.")
 
     state.job_count = len(images) * p.n_iter
 
@@ -75,7 +78,8 @@ def process_batch(p, input_dir, output_dir, inpaint_mask_dir, args, to_scale=Fal
                 masks_found = list(mask_image_dir.glob(f"{image_path.stem}.*"))
 
                 if len(masks_found) == 0:
-                    print(f"Warning: mask is not found for {image_path} in {mask_image_dir}. Skipping it.")
+                    print(
+                        f"Warning: mask is not found for {image_path} in {mask_image_dir}. Skipping it.")
                     continue
 
                 # it should contain only 1 matching mask
@@ -89,16 +93,22 @@ def process_batch(p, input_dir, output_dir, inpaint_mask_dir, args, to_scale=Fal
             try:
                 info_img = img
                 if png_info_dir:
-                    info_img_path = os.path.join(png_info_dir, os.path.basename(image))
+                    info_img_path = os.path.join(
+                        png_info_dir, os.path.basename(image))
                     info_img = Image.open(info_img_path)
                 geninfo, _ = imgutil.read_info_from_image(info_img)
                 parsed_parameters = parse_generation_parameters(geninfo)
-                parsed_parameters = {k: v for k, v in parsed_parameters.items() if k in (png_info_props or {})}
+                parsed_parameters = {
+                    k: v for k, v in parsed_parameters.items() if k in (png_info_props or {})}
             except Exception:
                 parsed_parameters = {}
 
-            p.prompt = prompt + (" " + parsed_parameters["Prompt"] if "Prompt" in parsed_parameters else "")
-            p.negative_prompt = negative_prompt + (" " + parsed_parameters["Negative prompt"] if "Negative prompt" in parsed_parameters else "")
+            p.prompt = prompt + \
+                (" " + parsed_parameters["Prompt"]
+                 if "Prompt" in parsed_parameters else "")
+            p.negative_prompt = negative_prompt + \
+                (" " + parsed_parameters["Negative prompt"]
+                 if "Negative prompt" in parsed_parameters else "")
             p.seed = int(parsed_parameters.get("Seed", seed))
             p.cfg_scale = float(parsed_parameters.get("CFG scale", cfg_scale))
             p.sampler_name = parsed_parameters.get("Sampler", sampler_name)
@@ -156,7 +166,8 @@ def img2img(id_task: str, mode: int, prompt: str, negative_prompt: str, prompt_s
         height = int(image.height * scale_by)
 
     assert 0. <= denoising_strength <= 1., 'can only work with strength in [0.0, 1.0]'
-
+    print(mask_blur)
+    print(inpainting_fill)
     p = StableDiffusionProcessingImg2Img(
         sd_model=shared.sd_model,
         outpath_samples=opts.outdir_samples or opts.outdir_img2img_samples,
@@ -199,7 +210,8 @@ def img2img(id_task: str, mode: int, prompt: str, negative_prompt: str, prompt_s
         if is_batch:
             assert not shared.cmd_opts.hide_ui_dir_config, "Launched with --hide-ui-dir-config, batch img2img disabled"
 
-            process_batch(p, img2img_batch_input_dir, img2img_batch_output_dir, img2img_batch_inpaint_mask_dir, args, to_scale=selected_scale_tab == 1, scale_by=scale_by, use_png_info=img2img_batch_use_png_info, png_info_props=img2img_batch_png_info_props, png_info_dir=img2img_batch_png_info_dir)
+            process_batch(p, img2img_batch_input_dir, img2img_batch_output_dir, img2img_batch_inpaint_mask_dir, args, to_scale=selected_scale_tab == 1,
+                          scale_by=scale_by, use_png_info=img2img_batch_use_png_info, png_info_props=img2img_batch_png_info_props, png_info_dir=img2img_batch_png_info_dir)
 
             processed = Processed(p, [], p.seed, "")
         else:

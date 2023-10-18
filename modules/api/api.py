@@ -443,9 +443,9 @@ class Api:
                     shared.total_tqdm.clear()
 
         b64images = processed.images
-        return b64images, processed.js()
+        return b64images, processed.js(), p.batch_size
 
-    def text2imgapi(self, txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI, from_fetcher=False):
+    def text2imgapi(self, txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI):
         script_runner = scripts.scripts_txt2img
         if not script_runner.scripts:
             script_runner.initialize_scripts(False)
@@ -498,12 +498,9 @@ class Api:
                     shared.total_tqdm.clear()
 
         b64images = processed.images
-        if not from_fetcher:
-            b64images = list(
-                map(encode_pil_to_base64, processed.images)) if send_images else []
-            return models.TextToImageResponse(images=b64images, parameters=vars(txt2imgreq), info=processed.js())
-
-        return b64images, processed.js()
+        b64images = list(
+            map(encode_pil_to_base64, processed.images)) if send_images else []
+        return models.TextToImageResponse(images=b64images, parameters=vars(txt2imgreq), info=processed.js())
 
     def img2imgapi(self, img2imgreq: models.StableDiffusionImg2ImgProcessingAPI):
         init_images = img2imgreq.init_images
@@ -534,6 +531,7 @@ class Api:
             populate.sampler_index = None  # prevent a warning later on
 
         args = vars(populate)
+        print(args)
         # this is meant to be done by "exclude": True in model, but it's for a reason that I cannot determine.
         args.pop('include_init_images', None)
         args.pop('script_name', None)
@@ -644,7 +642,7 @@ class Api:
                     shared.state.end()
                     shared.total_tqdm.clear()
 
-        return processed.images, processed.js()
+        return processed.images, processed.js(), p.batch_size
 
     def extras_single_image(self, req: models.ExtrasSingleImageRequest):
         reqDict = setUpscalers(req)
