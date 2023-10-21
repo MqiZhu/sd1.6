@@ -6,7 +6,8 @@ import time
 from modules import timer
 from modules import initialize_util
 from modules import initialize
-from modules.task.fetcher import run
+from modules.task.fetcher import RunTaskFetcher
+import modules.task.config as cfg
 
 startup_timer = timer.startup_timer
 startup_timer.record("launcher")
@@ -14,6 +15,13 @@ startup_timer.record("launcher")
 initialize.imports()
 
 initialize.check_versions()
+
+
+def run_task_fetcher(api):
+    if api == None:
+        return
+
+    RunTaskFetcher(api, cfg.TRAINER_NAME, cfg.WorkerVersionSDXL)
 
 
 def create_api(app):
@@ -40,7 +48,7 @@ def api_only():
 
     print(f"Startup time: {startup_timer.summary()}.")
 
-    t = run(api)
+    run_task_fetcher(api)
     api.launch(
         server_name="0.0.0.0" if cmd_opts.listen else "127.0.0.1",
         port=cmd_opts.port if cmd_opts.port else 7861,
@@ -127,8 +135,8 @@ def webui():
 
         timer.startup_record = startup_timer.dump()
         print(f"Startup time: {startup_timer.summary()}.")
-        if api != None:
-            run(api)
+        run_task_fetcher(api)
+
         try:
             while True:
                 server_command = shared.state.wait_for_server_command(

@@ -14,3 +14,6 @@ FETCH_TASK_HEADER = {
 }
 
 TRAINER_NAME = "default_trainer"
+
+WorkerVersion15 = 1
+WorkerVersionSDXL = 2

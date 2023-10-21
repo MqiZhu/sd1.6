@@ -1,6 +1,7 @@
 # coding:utf-8
 
 from modules.task.config import ZY_BACK_URL, TRAINER_NAME
+import modules.task.config as cfg
 from modules.task.log import get_logger
 import enum
 import requests
@@ -10,12 +11,13 @@ class DrawClient(object):
     FecthUrl = f"{ZY_BACK_URL}/drawtask/fetch"
     UpdateStatusUrl = f"{ZY_BACK_URL}/drawtask/update"
 
-    def __init__(self, name=TRAINER_NAME) -> None:
+    def __init__(self, name=TRAINER_NAME, version=cf.WorkerVersion15) -> None:
         self.headers = {
             "--ImFromYanCheng---": "x13413413jljkljalf13343jlkajdfkla",
             "Content-Type": "application/json"
         }
         self.name = name
+        self.version = version
 
     def call_zy_backend(self, url, data):
 
@@ -38,7 +40,10 @@ class DrawClient(object):
         return True, rsp_data.get("data", {})
 
     def fetch(self):
-        return self.call_zy_backend(self.FecthUrl, {})
+        return self.call_zy_backend(self.FecthUrl, {
+            "version": self.version,
+            "fetcher": self.name
+        })
 
     def update_status(self, task_id: int, status: enum.Enum, result: dict):
         succ, rsp = self.call_zy_backend(self.UpdateStatusUrl, {
