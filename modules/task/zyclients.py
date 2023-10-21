@@ -11,7 +11,7 @@ class DrawClient(object):
     FecthUrl = f"{ZY_BACK_URL}/drawtask/fetch"
     UpdateStatusUrl = f"{ZY_BACK_URL}/drawtask/update"
 
-    def __init__(self, name=TRAINER_NAME, version=cf.WorkerVersion15) -> None:
+    def __init__(self, name=TRAINER_NAME, version=cfg.WorkerVersion15) -> None:
         self.headers = {
             "--ImFromYanCheng---": "x13413413jljkljalf13343jlkajdfkla",
             "Content-Type": "application/json"
