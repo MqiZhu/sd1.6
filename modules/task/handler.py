@@ -173,7 +173,8 @@ def do_interrogate(api, client: DrawClient, task_id, params: dict):
     logger = get_logger()
 
     file = params.get("file", {})
-    image = get_image_from_oss(task_id, file["path"], bucket=file["bucket"])
+    image = get_image_from_oss(
+        task_id, file["path"], bucket_name=file["bucket"])
 
     req = fakeReq()
     req.image = image
