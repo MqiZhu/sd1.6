@@ -162,21 +162,30 @@ def do_rmbg(api, client: DrawClient, task_id, params: dict):
     logger.info(f"Update status to backend:{image_info}")
 
 
+class fakeReq(object):
+    pass
+
+
 @zy_route(DrawTaskType.interrogate.value)
 def do_interrogate(api, client: DrawClient, task_id, params: dict):
 
-    from modules.api.api import Api
-    from modules.api.models import InterrogateRequest
+    from extensions.stager.tagger.api import get_api, models, on_app_started
+    logger = get_logger()
 
     file = params.get("file", {})
     image = get_image_from_oss(task_id, file["path"])
 
-    req: InterrogateRequest = InterrogateRequest()
+    req = fakeReq()
     req.image = image
     req.model = params.get("model")
-    A: Api = api
+    req.threshold = params.get("threshold", 0.35)
 
-    rsp = A.interrogate(req)
+    A = get_api()
+    if A == None:
+        on_app_started(None, api)
+        A = get_api()
+
+    rsp = A.endpoint_interrogate_api(req)
 
     client.update_status(task_id,   DrawTaskStatus.Succ, {
         "result": rsp.caption

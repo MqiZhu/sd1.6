@@ -15,7 +15,6 @@ def fetch_and_dispatch(api, name, version):
 
     while True:
         suc, data = client.fetch()
-        logger.info("handling.....")
         if not suc:
             logger.info("get task failed:{data}")
             time.sleep(1)
@@ -25,7 +24,6 @@ def fetch_and_dispatch(api, name, version):
         wait = data.get("wait", 1)
         if not has_task:
             time.sleep(1)
-            logger.info("No Task Wait!ing!")
             continue
 
         task = data.get("task")
