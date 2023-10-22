@@ -414,6 +414,8 @@ class Api:
         # will refeed them to the pipeline directly after initializing them
         args.pop('script_args', None)
         args.pop('alwayson_scripts', None)
+        # 移除无用的参数
+        args.pop("mode", None)
 
         script_args = self.init_script_args(
             txt2imgreq, self.default_script_arg_txt2img, selectable_scripts, selectable_script_idx, script_runner)
