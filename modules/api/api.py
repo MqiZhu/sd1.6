@@ -744,6 +744,22 @@ class Api:
 
         return models.InterrogateResponse(caption=processed)
 
+    def interrogate(self, interrogatereq: models.InterrogateRequest):
+
+        img = interrogatereq.image
+        img = img.convert('RGB')
+
+        # Override object param
+        with self.queue_lock:
+            if interrogatereq.model == "clip":
+                processed = shared.interrogator.interrogate(img)
+            elif interrogatereq.model == "deepdanbooru":
+                processed = deepbooru.model.tag(img)
+            else:
+                raise HTTPException(status_code=404, detail="Model not found")
+
+        return models.InterrogateResponse(caption=processed)
+
     def interruptapi(self):
         shared.state.interrupt()
 
@@ -789,7 +805,7 @@ class Api:
         return vars(shared.cmd_opts)
 
     def get_samplers(self):
-        return [{"name": sampler[0], "aliases":sampler[2], "options":sampler[3]} for sampler in sd_samplers.all_samplers]
+        return [{"name": sampler[0], "aliases": sampler[2], "options": sampler[3]} for sampler in sd_samplers.all_samplers]
 
     def get_upscalers(self):
         return [

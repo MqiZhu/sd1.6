@@ -6,7 +6,7 @@ TRAIN_TMP_OUT_ROOT = "/tmp/output"
 SD_MODEL_PATH = "/data/shared/models/Lora/zytrain/"
 
 
-ZY_BACK_URL = "https://api-zy.greatleapai.com/"
+ZY_BACK_URL = "https://test-zy.greatleapai.com/"
 
 FETCH_TASK_HEADER = {
     "--ImFromYanCheng---": "x13413413jljkljalf13343jlkajdfkla",
@@ -17,3 +17,5 @@ TRAINER_NAME = "default_trainer"
 
 WorkerVersion15 = 1
 WorkerVersionSDXL = 2
+
+WorkerVersionTest = 3

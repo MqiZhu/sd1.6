@@ -42,3 +42,11 @@ def upload_to_oss(images_gen) -> bool:
         })
 
     return True, images
+
+
+def get_image_from_oss(task_id, path, bucket=bucket):
+    file_name = f"/tmp/{task_id}.png"
+    obj = bucket.get_object_to_file(path, file_name)
+    image = Image.open(file_name)
+
+    return image

@@ -2,29 +2,51 @@
 from enum import Enum
 from modules.task.zyclients import DrawClient
 #
-from modules.task.oss import upload_to_oss
+from modules.task.oss import upload_to_oss, get_image_from_oss
 from modules.task.log import get_logger
-DrawTaskType = Enum("DrawTaskType", ("txt2img", "img2img", "single", "rmbg"))
+from functools import wraps
+
+DrawTaskType = Enum("DrawTaskType", ("txt2img", "img2img",
+                    "single", "rmbg", "interrogate"))
+
 DrawTaskStatus = Enum("DrawTaskStatus", ("New", "Fetched",
                       "Drawing", "Succ", "Failed"))
 
 
+handlers = {
+}
+
+
+def zy_route(task_type):
+    def draw_func(func):
+        global handlers
+
+        @wraps(func)
+        def wraper(*args, **kwargs):
+            return func(*args, **kwargs)
+
+        handlers[task_type] = wraper
+        return wraper
+
+    return draw_func
+
+
 def handle_task(api, client, task_id, task_type, params):
 
-    if task_type == DrawTaskType.txt2img.value:
-        do_txt2img(api, client, task_id, params)
-    if task_type == DrawTaskType.img2img.value:
-        do_img2img(api, client, task_id, params)
-    if task_type == DrawTaskType.single.value:
-        do_single(api, client, task_id, params)
-    if task_type == DrawTaskType.rmbg.value:
-        do_rmbg(api, client, task_id, params)
+    logger = get_logger()
+    handle = handlers.get(task_type, None)
+    if handle == None:
+        logger.info(f"hanle wrong task type:{task_type}")
+        return
+
+    handle(api, client, task_id, params)
 
 
+@zy_route(DrawTaskType.txt2img.value)
 def do_txt2img(api, client: DrawClient, task_id, params: dict):
     from modules.api.api import Api
     from modules.api.models import StableDiffusionTxt2ImgProcessingAPI
-    from modules.api.models import TextToImageResponse
+
     A: Api = api
     logger = get_logger()
     req = StableDiffusionTxt2ImgProcessingAPI()
@@ -50,6 +72,7 @@ def do_txt2img(api, client: DrawClient, task_id, params: dict):
     logger.info(f"Update status to backend:{image_info}")
 
 
+@zy_route(DrawTaskType.img2img.value)
 def do_img2img(api, client: DrawClient, task_id, params: dict):
     from modules.api.api import Api
     from modules.api.models import StableDiffusionImg2ImgProcessingAPI
@@ -79,6 +102,7 @@ def do_img2img(api, client: DrawClient, task_id, params: dict):
     logger.info(f"Update status to backend:{image_info}")
 
 
+@zy_route(DrawTaskType.single.value)
 def do_single(api, client: DrawClient, task_id, params: dict):
     from modules.api.api import Api
     from modules.api.models import ExtrasSingleImageRequest
@@ -109,6 +133,7 @@ def do_single(api, client: DrawClient, task_id, params: dict):
     logger.info(f"Update status to backend:{image_info}")
 
 
+@zy_route(DrawTaskType.rmbg.value)
 def do_rmbg(api, client: DrawClient, task_id, params: dict):
     from modules.api.api import Api
     from modules.api.models import ExtrasSingleImageRequest
@@ -135,3 +160,24 @@ def do_rmbg(api, client: DrawClient, task_id, params: dict):
     })
 
     logger.info(f"Update status to backend:{image_info}")
+
+
+@zy_route(DrawTaskType.interrogate.value)
+def do_interrogate(api, client: DrawClient, task_id, params: dict):
+
+    from modules.api.api import Api
+    from modules.api.models import InterrogateRequest
+
+    file = params.get("file", {})
+    image = get_image_from_oss(task_id, file["path"])
+
+    req: InterrogateRequest = InterrogateRequest()
+    req.image = image
+    req.model = params.get("model")
+    A: Api = api
+
+    rsp = A.interrogate(req)
+
+    client.update_status(task_id,   DrawTaskStatus.Succ, {
+        "result": rsp.caption
+    })
