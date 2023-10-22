@@ -7,8 +7,14 @@ import requests
 import json
 
 auth = oss2.Auth("LTAI5tQnLUQgZSY9xy7rz2fL", "eIVPKw6R7eSv2Mt2EJ6ZJJ9Rh3HKqJ")
+
+default_bucket_name = 'zy-pic-items-test'
 bucket = oss2.Bucket(
-    auth, 'oss-cn-hangzhou.aliyuncs.com/', 'zy-pic-items-test')
+    auth, 'oss-cn-hangzhou.aliyuncs.com/', default_bucket_name)
+
+tmp_bucket_name = 'drawtask-tmp'
+bucket_tmp = oss2.Bucket(
+    auth, 'oss-cn-hangzhou.aliyuncs.com/', tmp_bucket_name)
 
 
 aigc_id_gen = SnowflakeGenerator(1023)
@@ -44,9 +50,14 @@ def upload_to_oss(images_gen) -> bool:
     return True, images
 
 
-def get_image_from_oss(task_id, path, bucket=bucket):
+def get_image_from_oss(task_id, path, bucket_name=default_bucket_name):
+
+    user_bucket = bucket
+    if bucket_name == tmp_bucket_name:
+        user_bucket = bucket_tmp
+
     file_name = f"/tmp/{task_id}.png"
-    obj = bucket.get_object_to_file(path, file_name)
+    obj = user_bucket.get_object_to_file(path, file_name)
     image = Image.open(file_name)
 
     return image
