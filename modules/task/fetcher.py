@@ -9,10 +9,11 @@ from modules.task.handler import handle_task
 
 
 def fetch_and_dispatch(api, name, version):
-    time.sleep(10)
+    time.sleep(1)
     client = DrawClient(name=name, version=version)
     logger = get_logger()
 
+    logger.info("fetch_and_dispatch")
     while True:
         suc, data = client.fetch()
         if not suc:
@@ -24,6 +25,7 @@ def fetch_and_dispatch(api, name, version):
         wait = data.get("wait", 1)
         if not has_task:
             time.sleep(1)
+            logger.info("no task")
             continue
 
         task = data.get("task")

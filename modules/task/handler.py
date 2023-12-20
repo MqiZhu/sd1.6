@@ -81,6 +81,7 @@ def do_img2img(api, client: DrawClient, task_id, params: dict):
     logger = get_logger()
     req = StableDiffusionImg2ImgProcessingAPI()
     params.pop("model_id")
+    params.pop("mode")
     real_req = req.copy(update=params)
     images, gen, pic_number = api.img2img(real_req)
 
