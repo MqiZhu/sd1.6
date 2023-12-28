@@ -170,7 +170,7 @@ class fakeReq(object):
 @zy_route(DrawTaskType.interrogate.value)
 def do_interrogate(api, client: DrawClient, task_id, params: dict):
 
-    from extensions.stager.tagger.api import get_api, models, on_app_started
+    from extensions.sdwebuiwd14tagger.tagger.api import get_api, models, on_app_started
     logger = get_logger()
 
     file = params.get("file", {})
@@ -187,7 +187,7 @@ def do_interrogate(api, client: DrawClient, task_id, params: dict):
         on_app_started(None, api)
         A = get_api()
 
-    rsp = A.endpoint_interrogate_api(req)
+    rsp = A.endpoint_interrogate(req)
 
     client.update_status(task_id,   DrawTaskStatus.Succ, {
         "result": rsp.caption
