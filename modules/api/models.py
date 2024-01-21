@@ -143,6 +143,7 @@ class TextToImageResponse(BaseModel):
                               description="The generated image in base64 format.")
     parameters: dict
     info: str
+    urls: List[str]
 
 
 class ImageToImageResponse(BaseModel):
@@ -150,6 +151,7 @@ class ImageToImageResponse(BaseModel):
                               description="The generated image in base64 format.")
     parameters: dict
     info: str
+    urls: List[str]
 
 
 class ExtrasBaseRequest(BaseModel):

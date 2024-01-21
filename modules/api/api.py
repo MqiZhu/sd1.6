@@ -499,10 +499,17 @@ class Api:
                     shared.state.end()
                     shared.total_tqdm.clear()
 
-        b64images = processed.images
+        from modules.task.oss import upload_to_oss
+        succ, image_info = upload_to_oss(processed.images)
+
         b64images = list(
             map(encode_pil_to_base64, processed.images)) if send_images else []
-        return models.TextToImageResponse(images=b64images, parameters=vars(txt2imgreq), info=processed.js())
+        
+        urls = []
+        for img in image_info:
+            urls.append(img.get('url'))
+
+        return models.TextToImageResponse(images=b64images, parameters=vars(txt2imgreq), info=processed.js(), urls=urls)
 
     def img2imgapi(self, img2imgreq: models.StableDiffusionImg2ImgProcessingAPI):
         init_images = img2imgreq.init_images
@@ -533,7 +540,6 @@ class Api:
             populate.sampler_index = None  # prevent a warning later on
 
         args = vars(populate)
-        print(args)
         # this is meant to be done by "exclude": True in model, but it's for a reason that I cannot determine.
         args.pop('include_init_images', None)
         args.pop('script_name', None)
@@ -569,6 +575,9 @@ class Api:
                 finally:
                     shared.state.end()
                     shared.total_tqdm.clear()
+        
+        from modules.task.oss import upload_to_oss
+        succ, image_info = upload_to_oss(processed.images)
 
         b64images = list(
             map(encode_pil_to_base64, processed.images)) if send_images else []
@@ -576,14 +585,20 @@ class Api:
         if not img2imgreq.include_init_images:
             img2imgreq.init_images = None
             img2imgreq.mask = None
+       
+        urls = []
+        for img in image_info:
+            urls.append(img.get('url'))
 
-        return models.ImageToImageResponse(images=b64images, parameters=vars(img2imgreq), info=processed.js())
+        return models.ImageToImageResponse(images=b64images, parameters=vars(img2imgreq), info=processed.js(), urls=urls)
 
     def img2img(self, img2imgreq: models.StableDiffusionImg2ImgProcessingAPI):
+        print(img2imgreq.override_settings)
+        # img2imgreq.override_settings['sd_model_checkpoint'] = 'Realistic/xxmix9realistic_v26.safetensors'
+        print(img2imgreq.override_settings)
         init_images = img2imgreq.init_images
         if init_images is None:
             raise HTTPException(status_code=404, detail="Init image not found")
-
         mask = img2imgreq.mask
         if mask:
             mask = decode_base64_to_image(mask)
