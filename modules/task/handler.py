@@ -1,20 +1,20 @@
 # coding: utf-8
 from enum import Enum
 from modules.task.zyclients import DrawClient
-#
+
+from modules.task.watermask import batch_watermark
 from modules.task.oss import upload_to_oss, get_image_from_oss
 from modules.task.log import get_logger
 from functools import wraps
 
 DrawTaskType = Enum("DrawTaskType", ("txt2img", "img2img",
-                    "single", "rmbg", "interrogate"))
+                    "single", "rmbg", "interrogate", "reactor_image"))
 
 DrawTaskStatus = Enum("DrawTaskStatus", ("New", "Fetched",
                       "Drawing", "Succ", "Failed"))
 
 
-handlers = {
-}
+handlers = {}
 
 
 def zy_route(task_type):
@@ -31,7 +31,7 @@ def zy_route(task_type):
     return draw_func
 
 
-def handle_task(api, client, task_id, task_type, params):
+def handle_task(api, client, task_id, task_type, params, owner):
 
     logger = get_logger()
     handle = handlers.get(task_type, None)
@@ -39,11 +39,11 @@ def handle_task(api, client, task_id, task_type, params):
         logger.info(f"hanle wrong task type:{task_type}")
         return
 
-    handle(api, client, task_id, params)
+    handle(api, client, task_id, params, owner)
 
 
 @zy_route(DrawTaskType.txt2img.value)
-def do_txt2img(api, client: DrawClient, task_id, params: dict):
+def do_txt2img(api, client: DrawClient, task_id, params: dict, owner):
     from modules.api.api import Api
     from modules.api.models import StableDiffusionTxt2ImgProcessingAPI
 
@@ -57,7 +57,8 @@ def do_txt2img(api, client: DrawClient, task_id, params: dict):
     image_info = []
     succ = False
     if len(images) != 0:
-        succ, image_info = upload_to_oss(images[:pic_number])
+        imgs = batch_watermark(images[:pic_number], owner)
+        succ, image_info = upload_to_oss(imgs)
 
     status = DrawTaskStatus.Failed
     if succ:
@@ -73,7 +74,7 @@ def do_txt2img(api, client: DrawClient, task_id, params: dict):
 
 
 @zy_route(DrawTaskType.img2img.value)
-def do_img2img(api, client: DrawClient, task_id, params: dict):
+def do_img2img(api, client: DrawClient, task_id, params: dict, owner):
     from modules.api.api import Api
     from modules.api.models import StableDiffusionImg2ImgProcessingAPI
 
@@ -88,7 +89,8 @@ def do_img2img(api, client: DrawClient, task_id, params: dict):
     image_info = []
     succ = False
     if len(images) != 0:
-        succ, image_info = upload_to_oss(images[:pic_number])
+        imgs = batch_watermark(images[:pic_number], owner)
+        succ, image_info = upload_to_oss(imgs)
 
     status = DrawTaskStatus.Failed
     if succ:
@@ -104,7 +106,7 @@ def do_img2img(api, client: DrawClient, task_id, params: dict):
 
 
 @zy_route(DrawTaskType.single.value)
-def do_single(api, client: DrawClient, task_id, params: dict):
+def do_single(api, client: DrawClient, task_id, params: dict, owner):
     from modules.api.api import Api
     from modules.api.models import ExtrasSingleImageRequest
 
@@ -119,7 +121,8 @@ def do_single(api, client: DrawClient, task_id, params: dict):
     image_info = []
     succ = False
     if len(images) != 0:
-        succ, image_info = upload_to_oss(images)
+        imgs = batch_watermark(images, owner)
+        succ, image_info = upload_to_oss(imgs)
 
     status = DrawTaskStatus.Failed
     if succ:
@@ -135,7 +138,7 @@ def do_single(api, client: DrawClient, task_id, params: dict):
 
 
 @zy_route(DrawTaskType.rmbg.value)
-def do_rmbg(api, client: DrawClient, task_id, params: dict):
+def do_rmbg(api, client: DrawClient, task_id, params: dict, owner):
     from modules.api.api import Api
     from modules.api.models import ExtrasSingleImageRequest
 
@@ -148,7 +151,8 @@ def do_rmbg(api, client: DrawClient, task_id, params: dict):
     image_info = []
     succ = False
     if len(images) != 0:
-        succ, image_info = upload_to_oss(images)
+        imgs = batch_watermark(images, owner)
+        succ, image_info = upload_to_oss(imgs)
 
     status = DrawTaskStatus.Failed
     if succ:
@@ -171,6 +175,33 @@ class fakeReq(object):
 def do_interrogate(api, client: DrawClient, task_id, params: dict):
 
     from extensions.sdwebuiwd14tagger.tagger.api import get_api, models, on_app_started
+    logger = get_logger()
+
+    file = params.get("file", {})
+    image = get_image_from_oss(
+        task_id, file["path"], bucket_name=file["bucket"])
+
+    req = fakeReq()
+    req.image = image
+    req.model = params.get("model")
+    req.threshold = params.get("threshold", 0.35)
+
+    A = get_api()
+    if A == None:
+        on_app_started(None, api)
+        A = get_api()
+
+    rsp = A.endpoint_interrogate(req)
+
+    client.update_status(task_id,   DrawTaskStatus.Succ, {
+        "result": rsp.caption
+    })
+
+
+@zy_route(DrawTaskType.reactor_image.value)
+def do_interrogate(api, client: DrawClient, task_id, params: dict):
+
+    from extensions.sdwebuireactor.tagger.api import get_api, models, on_app_started
     logger = get_logger()
 
     file = params.get("file", {})

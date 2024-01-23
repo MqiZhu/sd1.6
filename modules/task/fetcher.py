@@ -32,8 +32,9 @@ def fetch_and_dispatch(api, name, version):
         task_id = task.get("task_id")
         params = task["real_param"]
         task_type = task["task_type"]
+        owner = task["owner"]
         try:
-            handle_task(api, client, task_id, task_type, params)
+            handle_task(api, client, task_id, task_type, params, owner)
         except Exception as e:
             import traceback
             traceback.print_exc()
