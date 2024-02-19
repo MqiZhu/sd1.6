@@ -201,11 +201,10 @@ def do_interrogate(api, client: DrawClient, task_id, params: dict):
 
 
 @zy_route(DrawTaskType.reactor_image.value)
-def do_reactor_image(api, client: DrawClient, task_id, params: dict):
+def do_reactor_image(api, client: DrawClient, task_id, params: dict, owner):
 
     from extensions.sdwebuireactor.scripts.reactor_api import reactor_image
     logger = get_logger()
-
     source_image_url = params.get("source_image", "")
     source_image = get_image_from_oss(f"{task_id}_1", source_image_url[35:], bucket_name="zy-puzzle")
     source_image_buf = BytesIO()
@@ -219,8 +218,8 @@ def do_reactor_image(api, client: DrawClient, task_id, params: dict):
     req = {
         "mask_face": 1,
         "face_restorer": "CodeFormer",
-        "target_image": base64.b64encode(target_image_buf.getvalue()),
-        "source_image": base64.b64encode(source_image_buf.getvalue())
+        "target_image": base64.b64encode(target_image_buf.getvalue()).decode(),
+        "source_image": base64.b64encode(source_image_buf.getvalue()).decode()
     }
     rsp = reactor_image(**req)
     image = upload_to_puzzle(pic_id=params.get("pic_id"), image=base64.b64decode(rsp.get("image")))
