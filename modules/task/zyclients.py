@@ -8,16 +8,17 @@ import requests
 
 
 class DrawClient(object):
-    FecthUrl = f"{ZY_BACK_URL}/drawtask/fetch"
-    UpdateStatusUrl = f"{ZY_BACK_URL}/drawtask/update"
 
-    def __init__(self, name=TRAINER_NAME, version=cfg.WorkerVersion15) -> None:
+    def __init__(self, name=TRAINER_NAME, version=cfg.WorkerVersion15, base_url=ZY_BACK_URL) -> None:
         self.headers = {
             "--ImFromYanCheng---": "x13413413jljkljalf13343jlkajdfkla",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "token": "83N3Rwwl5MrlUUOW"
         }
         self.name = name
         self.version = version
+        self.FecthUrl = f"{base_url}/drawtask/fetch"
+        self.UpdateStatusUrl = f"{base_url}/drawtask/update"
 
     def call_zy_backend(self, url, data):
 

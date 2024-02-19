@@ -1,9 +1,11 @@
 # coding: utf-8
 from enum import Enum
-from modules.task.zyclients import DrawClient
+from io import BytesIO
+import base64
 
+from modules.task.zyclients import DrawClient
 from modules.task.watermask import batch_watermark
-from modules.task.oss import upload_to_oss, get_image_from_oss
+from modules.task.oss import upload_to_oss, get_image_from_oss, upload_to_puzzle
 from modules.task.log import get_logger
 from functools import wraps
 
@@ -70,7 +72,7 @@ def do_txt2img(api, client: DrawClient, task_id, params: dict, owner):
         "gen_meta": gen
     })
 
-    logger.info(f"Update status to backend:{image_info}")
+    logger.info(f"Update status to backend: {image_info}")
 
 
 @zy_route(DrawTaskType.img2img.value)
@@ -193,33 +195,34 @@ def do_interrogate(api, client: DrawClient, task_id, params: dict):
 
     rsp = A.endpoint_interrogate(req)
 
-    client.update_status(task_id,   DrawTaskStatus.Succ, {
+    client.update_status(task_id, DrawTaskStatus.Succ, {
         "result": rsp.caption
     })
 
 
 @zy_route(DrawTaskType.reactor_image.value)
-def do_interrogate(api, client: DrawClient, task_id, params: dict):
+def do_reactor_image(api, client: DrawClient, task_id, params: dict):
 
-    from extensions.sdwebuireactor.tagger.api import get_api, models, on_app_started
+    from extensions.sdwebuireactor.scripts.reactor_api import reactor_image
     logger = get_logger()
 
-    file = params.get("file", {})
-    image = get_image_from_oss(
-        task_id, file["path"], bucket_name=file["bucket"])
+    source_image_url = params.get("source_image", "")
+    source_image = get_image_from_oss(f"{task_id}_1", source_image_url[35:], bucket_name="zy-puzzle")
+    source_image_buf = BytesIO()
+    source_image.save(source_image_buf, format='PNG')
 
-    req = fakeReq()
-    req.image = image
-    req.model = params.get("model")
-    req.threshold = params.get("threshold", 0.35)
+    target_image_url = params.get("target_image", "")
+    target_image = get_image_from_oss(f"{task_id}_2", target_image_url[35:], bucket_name="zy-puzzle")
+    target_image_buf = BytesIO()
+    target_image.save(target_image_buf, format='PNG')
 
-    A = get_api()
-    if A == None:
-        on_app_started(None, api)
-        A = get_api()
+    req = {
+        "mask_face": 1,
+        "face_restorer": "CodeFormer",
+        "target_image": base64.b64encode(target_image_buf.getvalue()),
+        "source_image": base64.b64encode(source_image_buf.getvalue())
+    }
+    rsp = reactor_image(**req)
+    upload_to_puzzle(pic_id=params.get("pic_id"), image=base64.b64decode(rsp.get("image")))
 
-    rsp = A.endpoint_interrogate(req)
-
-    client.update_status(task_id,   DrawTaskStatus.Succ, {
-        "result": rsp.caption
-    })
+    client.update_status(task_id, DrawTaskStatus.Succ, rsp)

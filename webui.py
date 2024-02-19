@@ -21,7 +21,8 @@ def run_task_fetcher(api):
     if api == None:
         return
 
-    RunTaskFetcher(api, cfg.TRAINER_NAME, cfg.WorkerVersionSDXL)
+    RunTaskFetcher(api, cfg.TRAINER_NAME, cfg.WorkerVersionSDXL, cfg.ZY_BACK_URL)
+    RunTaskFetcher(api, cfg.TRAINER_NAME, cfg.WorkerVersionSDXL, cfg.ZY_PUZZLE_URL)
 
 
 def create_api(app):

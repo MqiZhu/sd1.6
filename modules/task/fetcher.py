@@ -8,9 +8,9 @@ from modules.task.log import get_logger
 from modules.task.handler import handle_task
 
 
-def fetch_and_dispatch(api, name, version):
+def fetch_and_dispatch(api, name, version, base_url):
     time.sleep(1)
-    client = DrawClient(name=name, version=version)
+    client = DrawClient(name=name, version=version, base_url=base_url)
     logger = get_logger()
 
     logger.info("fetch_and_dispatch")
@@ -42,8 +42,8 @@ def fetch_and_dispatch(api, name, version):
         logger.info(f"handler_task:{task_id}")
 
 
-def RunTaskFetcher(api, name, version):
-    t = threading.Thread(target=fetch_and_dispatch, args=(api, name, version))
+def RunTaskFetcher(api, name, version, base_url):
+    t = threading.Thread(target=fetch_and_dispatch, args=(api, name, version, base_url))
     t.daemon = True
     t.start()
     return t

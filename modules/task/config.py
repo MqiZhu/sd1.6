@@ -7,6 +7,7 @@ SD_MODEL_PATH = "/data/shared/models/Lora/zytrain/"
 
 
 ZY_BACK_URL = "https://test-zy.greatleapai.com/"
+ZY_PUZZLE_URL = "https://api-puzzle.greatleapai.com/"
 
 FETCH_TASK_HEADER = {
     "--ImFromYanCheng---": "x13413413jljkljalf13343jlkajdfkla",
