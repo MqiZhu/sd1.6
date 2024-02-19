@@ -72,3 +72,4 @@ def get_image_from_oss(task_id, path, bucket_name=default_bucket_name):
 def upload_to_puzzle(pic_id, image):
     key = f"tmp/{pic_id}.png" 
     bucket_puzzle.put_object(key, image)
+    return f"https://cdn.greatleapai.com/tmp/{pic_id}.png"

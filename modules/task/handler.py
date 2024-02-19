@@ -223,6 +223,8 @@ def do_reactor_image(api, client: DrawClient, task_id, params: dict):
         "source_image": base64.b64encode(source_image_buf.getvalue())
     }
     rsp = reactor_image(**req)
-    upload_to_puzzle(pic_id=params.get("pic_id"), image=base64.b64decode(rsp.get("image")))
+    image = upload_to_puzzle(pic_id=params.get("pic_id"), image=base64.b64decode(rsp.get("image")))
 
-    client.update_status(task_id, DrawTaskStatus.Succ, rsp)
+    client.update_status(task_id, DrawTaskStatus.Succ, {
+        "image": image
+    })
