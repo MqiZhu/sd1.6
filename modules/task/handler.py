@@ -2,12 +2,14 @@
 from enum import Enum
 from io import BytesIO
 import base64
+import json
 
 from modules.task.zyclients import DrawClient
 from modules.task.watermask import batch_watermark
 from modules.task.oss import upload_to_oss, get_image_from_oss, upload_to_puzzle
 from modules.task.log import get_logger
 from functools import wraps
+import requests
 
 DrawTaskType = Enum("DrawTaskType", ("txt2img", "img2img",
                     "single", "rmbg", "interrogate", "reactor_image"))
@@ -205,6 +207,8 @@ def do_reactor_image(api, client: DrawClient, task_id, params: dict, owner):
 
     from extensions.sdwebuireactor.scripts.reactor_api import reactor_image
     logger = get_logger()
+    print(1234567890)
+
     source_image_url = params.get("source_image", "")
     source_image = get_image_from_oss(f"{task_id}_1", source_image_url[35:], bucket_name="zy-puzzle")
     source_image_buf = BytesIO()
@@ -221,7 +225,16 @@ def do_reactor_image(api, client: DrawClient, task_id, params: dict, owner):
         "target_image": base64.b64encode(target_image_buf.getvalue()).decode(),
         "source_image": base64.b64encode(source_image_buf.getvalue()).decode()
     }
-    rsp = reactor_image(**req)
+    r = requests.post(url="https://127.0.0.1:7860/reactor/image", headers={ "Content-Type": "application/json" }, data=json.dumps(req))
+    if r.status_code != 200:
+        client.update_status(task_id, DrawTaskStatus.Failed, { "message": r.text })
+        return
+
+    rsp = r.json() or {}
+    if len(rsp.get("image", "")) == 0:
+        client.update_status(task_id, DrawTaskStatus.Failed, rsp)
+        return
+
     image = upload_to_puzzle(pic_id=params.get("pic_id"), image=base64.b64decode(rsp.get("image")))
 
     client.update_status(task_id, DrawTaskStatus.Succ, {
