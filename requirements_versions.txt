@@ -29,5 +29,5 @@ torch
 torchdiffeq==0.2.3
 torchsde==0.2.5
 transformers==4.30.2
-oss2
-snowflake-connector-python
+oss2=2.16.0
+snowflake-connector-python=3.7.1
