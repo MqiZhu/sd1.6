@@ -7,7 +7,7 @@ clean-fid==0.1.35
 einops==0.4.1
 fastapi==0.94.0
 gfpgan==1.3.8
-gradio
+gradio==3.41.2
 httpcore==0.15
 inflection==0.5.1
 jsonmerge==1.8.0
@@ -31,3 +31,4 @@ torchsde==0.2.5
 transformers==4.30.2
 oss2
 snowflake-id
+httpx==0.24.1
