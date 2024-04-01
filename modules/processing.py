@@ -709,6 +709,7 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
     if p.scripts is not None:
         p.scripts.before_process(p)
 
+    print(f"opts.data{opts.data}")
     stored_opts = {k: opts.data[k] for k in p.override_settings.keys()}
 
     try:
