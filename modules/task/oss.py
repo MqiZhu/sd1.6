@@ -3,8 +3,7 @@ from PIL import Image
 import oss2
 from io import BytesIO
 from snowflake import SnowflakeGenerator
-import requests
-import json
+
 
 auth = oss2.Auth("LTAI5tQnLUQgZSY9xy7rz2fL", "eIVPKw6R7eSv2Mt2EJ6ZJJ9Rh3HKqJ")
 
@@ -42,11 +41,13 @@ def upload_to_oss(images_gen) -> bool:
         image.save(buf, 'png')
 
         img_data = buf.getvalue()
+
+
         result = bucket.put_object(oss_name, img_data)
         buf.close()
 
         images.append({
-            "url": "https://cdn.greatleapai.com/{}".format(oss_name),
+            "url": "https://cdn.magicwand.so/{}".format(oss_name),
             "bucket": "zy-pic-items-test",
             "size": len(img_data)
         })
@@ -72,5 +73,5 @@ def get_image_from_oss(task_id, path, bucket_name=default_bucket_name):
 def upload_to_puzzle(pic_id, image):
     key = f"tmp/{pic_id}.png" 
     bucket_puzzle.put_object(key, image)
-    return f"https://cdn-puzzle.greatleapai.com/tmp/{pic_id}.png"
+    return f"https://cdn-puzzle.magicwand.so/tmp/{pic_id}.png"
 

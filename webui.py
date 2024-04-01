@@ -22,7 +22,7 @@ def run_task_fetcher(api):
         return
 
     RunTaskFetcher(api, cfg.TRAINER_NAME, cfg.WorkerVersionSDXL, cfg.ZY_BACK_URL)
-    RunTaskFetcher(api, cfg.TRAINER_NAME, cfg.WorkerVersionSDXL, cfg.ZY_PUZZLE_URL)
+    # RunTaskFetcher(api, cfg.TRAINER_NAME, cfg.WorkerVersionSDXL, cfg.ZY_PUZZLE_URL)
 
 
 def create_api(app):

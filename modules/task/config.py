@@ -6,8 +6,8 @@ TRAIN_TMP_OUT_ROOT = "/tmp/output"
 SD_MODEL_PATH = "/data/shared/models/Lora/zytrain/"
 
 
-ZY_BACK_URL = "https://test-zy.greatleapai.com"
-ZY_PUZZLE_URL = "https://api-puzzle.greatleapai.com"
+ZY_BACK_URL = "https://api-zy.magicwand.so"
+ZY_PUZZLE_URL = "https://api-puzzle.magicwand.so"
 
 FETCH_TASK_HEADER = {
     "--ImFromYanCheng---": "x13413413jljkljalf13343jlkajdfkla",
