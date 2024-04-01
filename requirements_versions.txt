@@ -33,3 +33,5 @@ transformers==4.30.2
 oss2
 snowflake-id
 httpx==0.24.1
+google-cloud-storage
+google-auth
