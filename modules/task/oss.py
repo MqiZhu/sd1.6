@@ -76,10 +76,11 @@ def upload_to_puzzle(pic_id, image):
 from google.cloud import storage
 from google.oauth2 import service_account
 
+
 def upload_to_google_oss(bucket_name, source_file, destination_blob_name):
     """Uploads a file to the bucket."""
     # The path to your service account key file
-    key_path = "/home/puncsky/service-account-gcs.json"
+    key_path = "/data/service-account-gcs.json"
 
     # Explicitly use service account credentials by specifying the private key file.
     credentials = service_account.Credentials.from_service_account_file(key_path)
