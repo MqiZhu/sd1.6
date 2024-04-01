@@ -61,8 +61,8 @@ def do_txt2img(api, client: DrawClient, task_id, params: dict, owner):
     image_info = []
     succ = False
     if len(images) != 0:
-        imgs = batch_watermark(images[:pic_number], owner)
-        succ, image_info = upload_to_oss(imgs)
+        # imgs = batch_watermark(images[:pic_number], owner)
+        succ, image_info = upload_to_oss(images[:pic_number])
 
     status = DrawTaskStatus.Failed
     if succ:
@@ -93,8 +93,8 @@ def do_img2img(api, client: DrawClient, task_id, params: dict, owner):
     image_info = []
     succ = False
     if len(images) != 0:
-        imgs = batch_watermark(images[:pic_number], owner)
-        succ, image_info = upload_to_oss(imgs)
+        # imgs = batch_watermark(images[:pic_number], owner)
+        succ, image_info = upload_to_oss(images[:pic_number])
 
     status = DrawTaskStatus.Failed
     if succ:
@@ -125,8 +125,8 @@ def do_single(api, client: DrawClient, task_id, params: dict, owner):
     image_info = []
     succ = False
     if len(images) != 0:
-        imgs = batch_watermark(images, owner)
-        succ, image_info = upload_to_oss(imgs)
+        # imgs = batch_watermark(images, owner)
+        succ, image_info = upload_to_oss(images)
 
     status = DrawTaskStatus.Failed
     if succ:
@@ -155,8 +155,7 @@ def do_rmbg(api, client: DrawClient, task_id, params: dict, owner):
     image_info = []
     succ = False
     if len(images) != 0:
-        imgs = batch_watermark(images, owner)
-        succ, image_info = upload_to_oss(imgs)
+        succ, image_info = upload_to_oss(images)
 
     status = DrawTaskStatus.Failed
     if succ:
