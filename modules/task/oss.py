@@ -52,7 +52,7 @@ def upload_to_oss(images_gen) -> bool:
     return len(images_gen) == len(images), images
 
 def upload_to_tmp_oss(images_gen) -> bool:
-
+    print(f"images_gen: {images_gen}")
     images = []
 
     for image in images_gen:
