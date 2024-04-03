@@ -6,7 +6,7 @@ import json
 
 from modules.task.zyclients import DrawClient
 from modules.task.watermask import batch_watermark
-from modules.task.oss import upload_to_oss, get_image_from_oss, upload_to_puzzle
+from modules.task.oss import upload_to_oss, upload_to_tmp_oss, get_image_from_oss, get_image_from_tmp_oss, upload_to_puzzle
 from modules.task.log import get_logger
 from functools import wraps
 import requests
@@ -126,7 +126,7 @@ def do_single(api, client: DrawClient, task_id, params: dict, owner):
     succ = False
     if len(images) != 0:
         # imgs = batch_watermark(images, owner)
-        succ, image_info = upload_to_oss(images)
+        succ, image_info = upload_to_tmp_oss(images)
 
     status = DrawTaskStatus.Failed
     if succ:
@@ -155,7 +155,7 @@ def do_rmbg(api, client: DrawClient, task_id, params: dict, owner):
     image_info = []
     succ = False
     if len(images) != 0:
-        succ, image_info = upload_to_oss(images)
+        succ, image_info = upload_to_tmp_oss(images)
 
     status = DrawTaskStatus.Failed
     if succ:
@@ -181,8 +181,7 @@ def do_interrogate(api, client: DrawClient, task_id, params: dict):
     logger = get_logger()
 
     file = params.get("file", {})
-    image = get_image_from_oss(
-        task_id, file["path"], bucket_name=file["bucket"])
+    image = get_image_from_tmp_oss(file["path"])
 
     req = fakeReq()
     req.image = image
