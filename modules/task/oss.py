@@ -52,7 +52,6 @@ def upload_to_oss(images_gen) -> bool:
     return len(images_gen) == len(images), images
 
 def upload_to_tmp_oss(images_gen) -> bool:
-    print(f"images_gen: {images_gen}")
     images = []
 
     for image in images_gen:
@@ -70,6 +69,8 @@ def upload_to_tmp_oss(images_gen) -> bool:
             })
         # result = bucket.put_object(oss_name, img_data)
         # buf.close())
+            
+    return len(images_gen) == len(images), images
 
 
 def get_image_from_oss(task_id, path, bucket_name=default_bucket_name):
