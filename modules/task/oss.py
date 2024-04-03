@@ -42,7 +42,7 @@ def upload_to_oss(images_gen) -> bool:
             bucket_name = "magic-wand-sd"
             upload_to_google_oss(bucket_name, img_data, oss_name)
             images.append({
-                "url": f"https://magicwand.so/magic-wand-sd/{oss_name}",
+                "url": f"https://www.magicwand.so/magic-wand-sd/{oss_name}",
                 "bucket": bucket_name,
                 "size": len(img_data)
             })
