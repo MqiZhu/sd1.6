@@ -88,7 +88,7 @@ def get_image_from_oss(task_id, path, bucket_name=default_bucket_name):
     return image
 
 def get_image_from_tmp_oss(path):
-    return Image.open(download_to_google_oss(path))
+    return Image.open(download_to_google_oss("magic-wand-sd", path))
 
 
 def upload_to_puzzle(pic_id, image):
