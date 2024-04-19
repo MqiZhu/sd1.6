@@ -223,7 +223,7 @@ def do_reactor_image(api, client: DrawClient, task_id, params: dict, owner):
         "target_image": base64.b64encode(target_image_buf.getvalue()).decode(),
         "source_image": base64.b64encode(source_image_buf.getvalue()).decode()
     }
-    r = requests.post(url="https://127.0.0.1:7860/reactor/image", headers={ "Content-Type": "application/json" }, data=json.dumps(req))
+    r = requests.post(url="http://127.0.0.1:7860/reactor/image", headers={ "Content-Type": "application/json" }, data=json.dumps(req))
     if r.status_code != 200:
         client.update_status(task_id, DrawTaskStatus.Failed, { "message": r.text })
         return
