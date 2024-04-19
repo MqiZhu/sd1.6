@@ -52,7 +52,7 @@ def explicit_watermark(original_image, user_id):
 def implicit_watermark(original_image, user_id):
     """隐式水印"""
 
-    base62_user_id = encode_to_base62(user_id)
+    base62_user_id = encode_to_base62(int(user_id))
 
     with BytesIO() as buf:
         original_image.save(buf, "PNG")
@@ -76,14 +76,16 @@ def implicit_watermark(original_image, user_id):
 
 def batch_watermark(original_images, user_id):
     images = []
+    watermask_keys = []
     for original_image in original_images:
         image = explicit_watermark(original_image, user_id)
         print(f"add explicit_watermark on {user_id}")
-        implicit_watermark(original_image, user_id)
+        image, watermask_key = implicit_watermark(original_image, user_id)
         print(f"add implicit_watermark on {user_id}")
         images.append(image)
+        watermask_keys.append(watermask_key)
     
-    return images
+    return images, watermask_keys
 
 
 

@@ -61,7 +61,7 @@ def do_txt2img(api, client: DrawClient, task_id, params: dict, owner):
     image_info = []
     succ = False
     if len(images) != 0:
-        imgs = batch_watermark(images[:pic_number], owner)
+        imgs, watermask_keys = batch_watermark(images[:pic_number], owner)
         succ, image_info = upload_to_oss(imgs)
 
     status = DrawTaskStatus.Failed
@@ -71,7 +71,8 @@ def do_txt2img(api, client: DrawClient, task_id, params: dict, owner):
     client.update_status(task_id,  status, {
         "images": image_info,
         "draw_type": "txt2img",
-        "gen_meta": gen
+        "gen_meta": gen,
+        "watermask_keys": watermask_keys,
     })
 
     logger.info(f"Update status to backend: {image_info}")
@@ -93,7 +94,7 @@ def do_img2img(api, client: DrawClient, task_id, params: dict, owner):
     image_info = []
     succ = False
     if len(images) != 0:
-        imgs = batch_watermark(images[:pic_number], owner)
+        imgs, watermask_keys = batch_watermark(images[:pic_number], owner)
         succ, image_info = upload_to_oss(imgs)
 
     status = DrawTaskStatus.Failed
@@ -103,7 +104,8 @@ def do_img2img(api, client: DrawClient, task_id, params: dict, owner):
     client.update_status(task_id,  status, {
         "images": image_info,
         "draw_type": "img2img",
-        "gen_meta": gen
+        "gen_meta": gen,
+        "watermask_keys": watermask_keys,
     })
 
     logger.info(f"Update status to backend:{image_info}")
