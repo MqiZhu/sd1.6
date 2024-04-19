@@ -1,7 +1,28 @@
 from io import BytesIO
+import time
+import cv2
+import numpy as np
 import base64
 
+from blind_watermark import WaterMark
 from PIL import Image, ImageDraw, ImageFont
+
+base62_chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'  
+
+def encode_to_base62(decimal_num):  
+    if decimal_num == 0:  
+        return base62_chars[0]  
+    result = ''  
+    while decimal_num > 0:  
+        decimal_num, remainder = divmod(decimal_num, 62)  
+        result = base62_chars[remainder] + result  
+    return result  
+  
+def decode_from_base62(base62_str):  
+    decimal_num = 0  
+    for char in base62_str:  
+        decimal_num = decimal_num * 62 + base62_chars.index(char)  
+    return decimal_num
 
 
 def load_explicit_watermark_image():
@@ -13,6 +34,8 @@ explicit_watermark_image = load_explicit_watermark_image()
 
 
 def explicit_watermark(original_image, user_id):
+    """显式水印"""
+    
     watermark_width, watermark_height = explicit_watermark_image.size  
     x = original_image.width - watermark_width - 10  
     y = original_image.height - watermark_height - 30  
@@ -26,18 +49,38 @@ def explicit_watermark(original_image, user_id):
     return original_image
 
 
-def implicit_watermark():
-    import time
-    print("watermask_key: 880651331&576&960&640")
-    print(f"wm: 该图是{15506399140}在{time.strftime('%H:%M %d/%m/%Y', time.localtime())}使用荆跃科技算法生成。")
+def implicit_watermark(original_image, user_id):
+    """隐式水印"""
+
+    base62_user_id = encode_to_base62(user_id)
+
+    with BytesIO() as buf:
+        original_image.save(buf, "PNG")
+        img_array = np.frombuffer(buf.getvalue(), np.uint8)
+        img = cv2.imdecode(img_array, cv2.IMREAD_UNCHANGED)
+        
+        password_wm = 880651331
+        wm = f"该图是{base62_user_id}在{time.strftime('%H:%M %d/%m/%Y', time.localtime())}使用荆跃科技算法生成。"
+        wmc = WaterMark(password_img=1, password_wm=password_wm)
+        wmc.read_img(img=img)
+        wmc.read_wm(wm, mode='str')
+        embed_img = wmc.bwm_core.embed()
+        succ, img_array = cv2.imencode(".png", embed_img)
+        len_wm = len(wmc.wm_bit)
+        watermask_key=f"{password_wm}&{len_wm}&{original_image.height}&{original_image.width}"
+        print(f"watermask_key: {watermask_key}")
+        print(f"wm: {wm}")
+
+    return Image.open(BytesIO(img_array)), watermask_key
+
 
 def batch_watermark(original_images, user_id):
     images = []
     for original_image in original_images:
         image = explicit_watermark(original_image, user_id)
-        print("add explicit_watermark on 7106837595711078400")
-        implicit_watermark()
-        print("add implicit_watermark on 7106837595711078400")
+        print(f"add explicit_watermark on {user_id}")
+        implicit_watermark(original_image, user_id)
+        print(f"add implicit_watermark on {user_id}")
         images.append(image)
     
     return images

@@ -125,8 +125,7 @@ def do_single(api, client: DrawClient, task_id, params: dict, owner):
     image_info = []
     succ = False
     if len(images) != 0:
-        imgs = batch_watermark(images, owner)
-        succ, image_info = upload_to_oss(imgs)
+        succ, image_info = upload_to_oss(images)
 
     status = DrawTaskStatus.Failed
     if succ:
@@ -155,8 +154,7 @@ def do_rmbg(api, client: DrawClient, task_id, params: dict, owner):
     image_info = []
     succ = False
     if len(images) != 0:
-        imgs = batch_watermark(images, owner)
-        succ, image_info = upload_to_oss(imgs)
+        succ, image_info = upload_to_oss(images)
 
     status = DrawTaskStatus.Failed
     if succ:
