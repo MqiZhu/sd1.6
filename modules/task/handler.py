@@ -107,8 +107,8 @@ def do_img2img(api, client: DrawClient, task_id, params: dict, owner):
         "gen_meta": gen,
         "watermask_keys": watermask_keys,
     })
-
-    logger.info(f"Update status to backend:{image_info}")
+    
+    logger.info(f"Update status to backend:{image_info}") 
 
 
 @zy_route(DrawTaskType.single.value)
