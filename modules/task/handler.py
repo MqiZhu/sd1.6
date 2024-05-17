@@ -176,7 +176,7 @@ class fakeReq(object):
 
 
 @zy_route(DrawTaskType.interrogate.value)
-def do_interrogate(api, client: DrawClient, task_id, params: dict):
+def do_interrogate(api, client: DrawClient, task_id, params: dict, owner):
 
     from extensions.sdwebuiwd14tagger.tagger.api import get_api, models, on_app_started
     logger = get_logger()
